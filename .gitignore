@@ -1,0 +1,33 @@
+# Build outputs
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# VS Code
+.vscode/
+
+# Azure Functions local settings (contains secrets)
+local.settings.json
+
+# Logs
+*.log
+
+# Test results
+TestResults/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+coverage.*
+
+# Packages
+*.nupkg

@@ -1,0 +1,53 @@
+name: Deploy to Azure Functions (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      functionAppName:
+        description: 'Nome do Azure Function App (já criado no Azure)'
+        required: true
+      resourceGroup:
+        description: 'Resource Group do Function App'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        run: |
+          dotnet restore CpfValidator.sln
+          dotnet build CpfValidator.sln -c Release
+
+      - name: Publish
+        run: dotnet publish src/CpfValidator.FunctionApp/CpfValidator.FunctionApp.csproj -c Release -o published
+
+      # Requires Azure federated credentials OR AZURE_CREDENTIALS secret (service principal).
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          # Option A: OIDC (recommended) - configure Federated Credential in Azure
+          # client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          # Option B: classic secret-based login
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ inputs.functionAppName }}
+          package: published
